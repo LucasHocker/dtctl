@@ -168,6 +168,11 @@ var ResourceScopes = map[string]AccessScopes{
 	// from a static table. An entry here claiming a single scope for every
 	// possible target would be wrong for almost all of them.
 	"api": {},
+
+	// Platform Management (/platform/management/v1/...)
+	"environment":      {Read: []string{"app-engine:apps:run"}},
+	"license":          {Read: []string{"app-engine:apps:run"}},
+	"license-settings": {Read: []string{"app-engine:apps:run"}},
 }
 
 // localResources are catalog subcommands that operate entirely on the local

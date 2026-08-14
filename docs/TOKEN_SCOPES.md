@@ -447,6 +447,14 @@ email:emails:send
 
 `dev-obs:breakpoints:set` is not included in the `readonly` safety level.
 
+### Platform Management
+
+| Scope | Description |
+|-------|-------------|
+| `app-engine:apps:run` | Read environment info, license info, and license feature settings (`get environment`, `get license`, `get license-settings`) |
+
+`platform-management:environments:read` is an alternative scope that also grants access to these endpoints.
+
 ### IAM
 
 > **Note**: The `iam:users:read` and `iam:groups:read` scopes are defined in the IAM API spec but may not be available in all token management UIs (e.g., the platform token page). If unavailable, user and group listing features will not work with that token type.

@@ -50,6 +50,7 @@ var nativeCoverage = map[string]Coverage{
 	"/platform/app-engine/function-executor/v1": {"function", "dtctl exec function"},
 	"/platform/app-engine/edge-connect/v1":      {"edgeconnect", "dtctl get edgeconnect"},
 	"/platform/dob/graphql":                     {"breakpoint", "dtctl get breakpoints"},
+	"/platform/management/v1":                   {"environment", "dtctl get environment"},
 }
 
 // NativeResourceFor returns the dtctl resource covering an API base path, or ""
