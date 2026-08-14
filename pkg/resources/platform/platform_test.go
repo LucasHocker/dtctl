@@ -86,6 +86,39 @@ func TestGetLicenseSettings(t *testing.T) {
 	}
 }
 
+func TestGetLicenseSettings_WithKey(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/platform/management/v1/environment/license/settings", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		keys := r.URL.Query()["keys"]
+		if len(keys) != 1 || keys[0] != "AUTOMATION" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"settings": []map[string]string{
+				{"key": "AUTOMATION", "value": "true"},
+			},
+		})
+	})
+
+	h := newTestHandler(t, mux)
+	settings, err := h.GetLicenseSettings("AUTOMATION")
+	if err != nil {
+		t.Fatalf("GetLicenseSettings() error: %v", err)
+	}
+	if len(settings) != 1 {
+		t.Errorf("len(settings) = %d, want 1", len(settings))
+	}
+	if settings[0].Key != "AUTOMATION" {
+		t.Errorf("settings[0].Key = %q, want %q", settings[0].Key, "AUTOMATION")
+	}
+}
+
 func TestGetLicense(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/platform/management/v1/environment/license", func(w http.ResponseWriter, r *http.Request) {
