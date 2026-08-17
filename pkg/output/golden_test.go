@@ -3003,6 +3003,7 @@ func TestGolden_GetEnvironment(t *testing.T) {
 
 	formats := map[string]string{
 		"table": "table",
+		"wide":  "wide",
 		"json":  "json",
 		"yaml":  "yaml",
 		"toon":  "toon",
@@ -3112,6 +3113,27 @@ func TestGolden_GetLicenseSettings(t *testing.T) {
 				t.Fatalf("PrintList failed: %v", err)
 			}
 			assertGolden(t, "get/license-settings-"+name, buf.String())
+		})
+	}
+}
+
+func TestGolden_GetLicenseSettings_Empty(t *testing.T) {
+	formats := map[string]string{
+		"table": "table",
+		"wide":  "wide",
+		"json":  "json",
+		"yaml":  "yaml",
+		"toon":  "toon",
+	}
+
+	for name, format := range formats {
+		t.Run(name, func(t *testing.T) {
+			var buf bytes.Buffer
+			printer := NewPrinterWithWriter(format, &buf)
+			if err := printer.PrintList([]platform.LicenseSetting{}); err != nil {
+				t.Fatalf("PrintList failed: %v", err)
+			}
+			assertGolden(t, "empty/license-settings-"+name, buf.String())
 		})
 	}
 }

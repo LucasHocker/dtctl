@@ -51,7 +51,6 @@ func newPlatformMockServer(t *testing.T) *httptest.Server {
 		_ = json.NewEncoder(w).Encode(map[string]any{"settings": settings})
 	})
 
-	// Register license after license/settings so the more-specific path wins.
 	mux.HandleFunc("/platform/management/v1/environment/license", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{

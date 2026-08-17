@@ -65,8 +65,8 @@ func (h *Handler) GetEnvironment(ctx context.Context) (*EnvironmentInfo, error) 
 // GetLicenseSettings retrieves environment license feature settings, optionally filtered by key.
 func (h *Handler) GetLicenseSettings(ctx context.Context, keys ...string) (*LicenseSettings, error) {
 	req := h.client.HTTP().R().SetContext(ctx)
-	for _, k := range keys {
-		req = req.SetQueryParam("keys", k)
+	if len(keys) > 0 {
+		req.SetQueryParamsFromValues(map[string][]string{"keys": keys})
 	}
 	resp, err := req.Get("/platform/management/v1/environment/license/settings")
 	if err != nil {

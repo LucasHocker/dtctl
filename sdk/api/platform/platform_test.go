@@ -167,6 +167,39 @@ func TestGetLicenseSettings_WithKey(t *testing.T) {
 	}
 }
 
+func TestGetLicenseSettings_WithMultipleKeys(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/platform/management/v1/environment/license/settings", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		keys := r.URL.Query()["keys"]
+		if len(keys) != 2 {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, `{"error":{"message":"expected 2 keys, got %d"}}`, len(keys))
+			return
+		}
+		resp := LicenseSettings{
+			Settings: []LicenseSetting{
+				{Key: keys[0], Value: "true"},
+				{Key: keys[1], Value: "true"},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	h := NewHandler(newTestClient(t, mux))
+	result, err := h.GetLicenseSettings(context.Background(), "AUTOMATION", "AI_FUNCTIONS")
+	if err != nil {
+		t.Fatalf("GetLicenseSettings() error: %v", err)
+	}
+	if len(result.Settings) != 2 {
+		t.Errorf("len(Settings) = %d, want 2", len(result.Settings))
+	}
+}
+
 func TestGetLicense_Error(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/platform/management/v1/environment/license", func(w http.ResponseWriter, r *http.Request) {
