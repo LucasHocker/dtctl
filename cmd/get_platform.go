@@ -11,6 +11,7 @@ var getEnvironmentCmd = &cobra.Command{
 	Use:     "environment",
 	Aliases: []string{"env"},
 	Short:   "Get environment information",
+	Args:    cobra.NoArgs,
 	Long: `Get information about the current Dynatrace environment.
 
 Examples:
@@ -38,12 +39,12 @@ Examples:
 
 // getLicenseSettingsCmd retrieves environment license feature settings
 var getLicenseSettingsCmd = &cobra.Command{
-	Use:     "license-settings [key]",
+	Use:     "license-settings [key...]",
 	Aliases: []string{"license-setting"},
 	Short:   "Get environment license feature settings",
 	Long: `Get the feature settings included in the environment license.
 
-Optionally filter to a single setting by providing its key.
+Optionally filter by one or more setting keys.
 
 Examples:
   # List all license feature settings
@@ -51,6 +52,9 @@ Examples:
 
   # Get a specific setting by key
   dtctl get license-settings AUTOMATION
+
+  # Get multiple settings by key
+  dtctl get license-settings AUTOMATION AI_FUNCTIONS
 
   # Output as JSON
   dtctl get license-settings -o json
@@ -61,13 +65,8 @@ Examples:
 			return err
 		}
 
-		key := ""
-		if len(args) > 0 {
-			key = args[0]
-		}
-
 		h := platform.NewHandler(c)
-		settings, err := h.GetLicenseSettings(key)
+		settings, err := h.GetLicenseSettings(args...)
 		if err != nil {
 			return err
 		}
@@ -80,6 +79,7 @@ Examples:
 var getLicenseCmd = &cobra.Command{
 	Use:   "license",
 	Short: "Get environment license information",
+	Args:  cobra.NoArgs,
 	Long: `Get license information for the current Dynatrace environment.
 
 Examples:

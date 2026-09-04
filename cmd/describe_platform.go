@@ -7,11 +7,22 @@ import (
 	"github.com/dynatrace-oss/dtctl/pkg/resources/platform"
 )
 
+// usePlatformDescribeTextView reports whether to render the human-readable KV
+// text view. Agent mode always takes the structured path (outputFormat stays at
+// its "table" default when --agent is set, so the check cannot be outputFormat alone).
+func usePlatformDescribeTextView() bool {
+	if agentMode {
+		return false
+	}
+	return outputFormat == "" || outputFormat == "table"
+}
+
 // describeEnvironmentCmd shows detailed environment information
 var describeEnvironmentCmd = &cobra.Command{
 	Use:     "environment",
 	Aliases: []string{"env"},
 	Short:   "Show details of the current environment",
+	Args:    cobra.NoArgs,
 	Long: `Show detailed information about the current Dynatrace environment.
 
 Examples:
@@ -30,13 +41,17 @@ Examples:
 			return err
 		}
 
-		if outputFormat == "table" {
+		if usePlatformDescribeTextView() {
 			const w = 12
 			output.DescribeKV("ID:", w, "%s", info.EnvironmentID)
 			output.DescribeKV("Type:", w, "%s", info.Type)
 			output.DescribeKV("State:", w, "%s", info.State)
-			output.DescribeKV("Created:", w, "%s", info.CreateTime.Format("2006-01-02"))
-			output.DescribeKV("Block Time:", w, "%s", info.BlockTime.Format("2006-01-02"))
+			if !info.CreateTime.IsZero() {
+				output.DescribeKV("Created:", w, "%s", info.CreateTime.Format("2006-01-02"))
+			}
+			if !info.BlockTime.IsZero() {
+				output.DescribeKV("Block Time:", w, "%s", info.BlockTime.Format("2006-01-02"))
+			}
 			return nil
 		}
 
@@ -49,6 +64,7 @@ Examples:
 var describeLicenseCmd = &cobra.Command{
 	Use:   "license",
 	Short: "Show details of the environment license",
+	Args:  cobra.NoArgs,
 	Long: `Show detailed license information for the current Dynatrace environment.
 
 Examples:
@@ -67,7 +83,7 @@ Examples:
 			return err
 		}
 
-		if outputFormat == "table" {
+		if usePlatformDescribeTextView() {
 			const w = 24
 			output.DescribeKV("Trial:", w, "%v", lic.Trial)
 			output.DescribeKV("Platform Subscription:", w, "%v", lic.PlatformSubscription)

@@ -57,15 +57,9 @@ func (h *Handler) GetEnvironment() (*EnvironmentInfo, error) {
 	}, nil
 }
 
-// GetLicenseSettings retrieves license feature settings, optionally filtered to a specific key.
-func (h *Handler) GetLicenseSettings(key string) ([]LicenseSetting, error) {
-	var sdkResult *sdkplatform.LicenseSettings
-	var err error
-	if key != "" {
-		sdkResult, err = h.sdk.GetLicenseSettings(context.Background(), key)
-	} else {
-		sdkResult, err = h.sdk.GetLicenseSettings(context.Background())
-	}
+// GetLicenseSettings retrieves license feature settings, optionally filtered to specific keys.
+func (h *Handler) GetLicenseSettings(keys ...string) ([]LicenseSetting, error) {
+	sdkResult, err := h.sdk.GetLicenseSettings(context.Background(), keys...)
 	if err != nil {
 		return nil, err
 	}
