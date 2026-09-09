@@ -68,7 +68,7 @@ type LicenseSetting struct {
 ```
 
 ### Scope Required
-- `app-engine:apps:run` OR `app-engine:functions:run` OR `platform-management:environments:read`
+- `app-engine:apps:run` (already requested at login; see TOKEN_SCOPES.md for the `platform-management:environments:read` narrow-scope alternative)
 
 ---
 

@@ -71,7 +71,7 @@ func TestGetLicenseSettings(t *testing.T) {
 	})
 
 	h := newTestHandler(t, mux)
-	settings, err := h.GetLicenseSettings("")
+	settings, err := h.GetLicenseSettings()
 	if err != nil {
 		t.Fatalf("GetLicenseSettings() error: %v", err)
 	}

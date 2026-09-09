@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/cobra"
+
 	"github.com/dynatrace-oss/dtctl/pkg/config"
 )
 
@@ -197,6 +199,106 @@ func TestGetLicenseSettingsCmd_WithKey(t *testing.T) {
 	}
 	if got[0]["key"] != "AUTOMATION" {
 		t.Errorf("key = %v, want AUTOMATION", got[0]["key"])
+	}
+}
+
+func TestPlatformCommandArgs(t *testing.T) {
+	for _, cmd := range []*cobra.Command{
+		getEnvironmentCmd,
+		getLicenseCmd,
+		describeEnvironmentCmd,
+		describeLicenseCmd,
+	} {
+		if err := cmd.Args(cmd, []string{}); err != nil {
+			t.Errorf("%s: expected no args to be accepted, got: %v", cmd.Use, err)
+		}
+		if err := cmd.Args(cmd, []string{"extra"}); err == nil {
+			t.Errorf("%s: expected extra args to be rejected", cmd.Use)
+		}
+	}
+}
+
+func TestUsePlatformDescribeTextView(t *testing.T) {
+	originalFormat := outputFormat
+	originalAgentMode := agentMode
+	defer func() { outputFormat = originalFormat }()
+	defer func() { agentMode = originalAgentMode }()
+
+	tests := []struct {
+		name   string
+		format string
+		want   bool
+	}{
+		{name: "default", format: "", want: true},
+		{name: "table", format: "table", want: true},
+		{name: "wide", format: "wide", want: true},
+		{name: "json", format: "json", want: false},
+		{name: "yaml", format: "yaml", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			agentMode = false
+			outputFormat = tt.format
+			if got := usePlatformDescribeTextView(); got != tt.want {
+				t.Fatalf("usePlatformDescribeTextView() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
+	t.Run("agent mode forces structured view", func(t *testing.T) {
+		agentMode = true
+		outputFormat = "table"
+		if got := usePlatformDescribeTextView(); got {
+			t.Fatalf("usePlatformDescribeTextView() = %v, want false when agent mode enabled", got)
+		}
+	})
+}
+
+func TestDescribeEnvironmentCmd_ZeroTimestamp(t *testing.T) {
+	// Verify that zero-value CreateTime and BlockTime are not rendered.
+	mux := http.NewServeMux()
+	mux.HandleFunc("/platform/management/v1/environment", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		// Omit createTime and blockTime to produce zero time.Time values.
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"environmentId": "zero-ts-env",
+			"type":          "TRIAL",
+			"state":         "ACTIVE",
+		})
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	setupPlatformCmdTest(t, srv, "table")
+
+	out := capturePlatformStdout(t, func() {
+		if err := describeEnvironmentCmd.RunE(describeEnvironmentCmd, nil); err != nil {
+			t.Fatalf("describe environment: %v", err)
+		}
+	})
+
+	if strings.Contains(out, "0001-01-01") {
+		t.Errorf("zero timestamp rendered in output, want it omitted:\n%s", out)
+	}
+}
+
+func TestGetLicenseSettingsCmd_MultiKey(t *testing.T) {
+	srv := newPlatformMockServer(t)
+	defer srv.Close()
+	setupPlatformCmdTest(t, srv, "json")
+
+	out := capturePlatformStdout(t, func() {
+		if err := getLicenseSettingsCmd.RunE(getLicenseSettingsCmd, []string{"AUTOMATION", "AI_FUNCTIONS"}); err != nil {
+			t.Fatalf("get license-settings AUTOMATION AI_FUNCTIONS: %v", err)
+		}
+	})
+
+	var got []map[string]any
+	if err := json.Unmarshal([]byte(out), &got); err != nil {
+		t.Fatalf("output is not valid JSON array: %v\n%s", err, out)
+	}
+	if len(got) != 2 {
+		t.Errorf("len(settings) = %d, want 2 (one per key)", len(got))
 	}
 }
 

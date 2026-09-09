@@ -42,7 +42,7 @@ func TestPlatformReadLifecycle(t *testing.T) {
 	})
 
 	t.Run("get license-settings all", func(t *testing.T) {
-		settings, err := handler.GetLicenseSettings("")
+		settings, err := handler.GetLicenseSettings()
 		if err != nil {
 			t.Fatalf("GetLicenseSettings() failed: %v", err)
 		}
@@ -50,7 +50,7 @@ func TestPlatformReadLifecycle(t *testing.T) {
 	})
 
 	t.Run("get license-settings filtered", func(t *testing.T) {
-		all, err := handler.GetLicenseSettings("")
+		all, err := handler.GetLicenseSettings()
 		if err != nil {
 			t.Fatalf("GetLicenseSettings() failed: %v", err)
 		}

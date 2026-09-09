@@ -26,7 +26,8 @@ type License struct {
 
 // LicenseSetting is a single feature-flag entry from the license settings list.
 type LicenseSetting struct {
-	Key   string `json:"key" table:"KEY"`
+	Key string `json:"key" table:"KEY"`
+	// Value is a JSON string from the API (e.g. "true"/"false"), not a boolean.
 	Value string `json:"value" table:"ENABLED"`
 }
 

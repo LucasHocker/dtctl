@@ -200,6 +200,20 @@ func TestGetLicenseSettings_WithMultipleKeys(t *testing.T) {
 	}
 }
 
+func TestGetLicenseSettings_Error(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/platform/management/v1/environment/license/settings", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, `{"error":{"message":"missing scope"}}`)
+	})
+
+	h := NewHandler(newTestClient(t, mux))
+	_, err := h.GetLicenseSettings(context.Background())
+	if err == nil {
+		t.Fatal("GetLicenseSettings() expected error for 403")
+	}
+}
+
 func TestGetLicense_Error(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/platform/management/v1/environment/license", func(w http.ResponseWriter, r *http.Request) {

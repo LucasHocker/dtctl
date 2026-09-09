@@ -14,7 +14,9 @@ func usePlatformDescribeTextView() bool {
 	if agentMode {
 		return false
 	}
-	return outputFormat == "" || outputFormat == "table"
+	// wide selects extra columns of the describe table, not a different view
+	// (same reasoning as describe_api.go:117).
+	return outputFormat == "" || outputFormat == "table" || outputFormat == "wide"
 }
 
 // describeEnvironmentCmd shows detailed environment information
